@@ -1,8 +1,5 @@
 package se.ifmo.ru;
 
-import java.util.ArrayList;
-import java.util.List;
-
 public class CubicSplineInterpolation {
 
     private SplineCoefficients[] splineCoefficients;
@@ -17,7 +14,7 @@ public class CubicSplineInterpolation {
         }
 
         splineCoefficients[0].setC(0);
-        splineCoefficients[n-1].setC(0);
+        splineCoefficients[n - 1].setC(0);
 
         double[] alpha = new double[n - 1];
         double[] beta = new double[n - 1];
@@ -35,5 +32,34 @@ public class CubicSplineInterpolation {
             alpha[i] = -b / (a * alpha[i - 1] + c);
             beta[i] = (f - a * beta[i - 1] / (a * alpha[i - 1] + c));
         }
+
+        for (int i = n - 1; i > 0; i--) {
+            hi = xArray[i] - xArray[i - 1];
+            splineCoefficients[i].setD((splineCoefficients[i].getC() - splineCoefficients[i - 1].getC()) / hi);
+            splineCoefficients[i].setB(hi * (2 * splineCoefficients[i].getC() + splineCoefficients[i - 1].getC()) / 6 + (yArray[i] - yArray[i - 1]) / hi);
+        }
+    }
+
+    public double getInterpolatedFunctionY(double x) {
+
+        SplineCoefficients coefficients;
+        if (x <= splineCoefficients[0].getX())
+            coefficients = splineCoefficients[0];
+        else if (x >= splineCoefficients[splineCoefficients.length - 1].getX())
+            coefficients = splineCoefficients[splineCoefficients.length - 1];
+        else {
+            int i = 0;
+            int j = splineCoefficients.length - 1;
+            while (i + 1 < j) {
+                int k = i + (j - i) / 2;
+                if (x <= splineCoefficients[k].getX())
+                    j = k;
+                else
+                    i = k;
+            }
+            coefficients = splineCoefficients[j];
+        }
+        double dx = x - coefficients.getX();
+        return coefficients.getA() + coefficients.getB() * dx + coefficients.getC() * dx * dx / 2 + coefficients.getD() * dx * dx * dx / 6;
     }
 }
