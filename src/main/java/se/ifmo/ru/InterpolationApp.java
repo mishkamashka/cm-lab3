@@ -108,18 +108,10 @@ public class InterpolationApp extends Application {
         gridPane.add(testSet3, 0, 8);
     }
 
-    private static void addModelChart() {
+    private static void addModelChart(Function function) {
 
         XYChart.Series series = new XYChart.Series();
         series.setName("Model chart");
-
-        Function function;
-        Toggle toggle = functionsGroup.getSelectedToggle();
-        try{
-            function = (Function) toggle.getUserData();
-        } catch (NullPointerException e) {
-            return;
-        }
 
         for (double i = 0; i <= 2 * Math.PI; i += 0.1) {
             XYChart.Data data = new XYChart.Data(i, function.calculateFunction(i));
@@ -166,6 +158,16 @@ public class InterpolationApp extends Application {
                 } catch (NullPointerException e) {
                     return;
                 }
+
+                Function function;
+                Toggle toggle1 = functionsGroup.getSelectedToggle();
+                try{
+                    function = (Function) toggle1.getUserData();
+                } catch (NullPointerException e) {
+                    return;
+                }
+
+                testSet.setFunction(function);
                 int n = testSet.setXTestSet().size();
                 xArray = new Double[n];
                 yArray = new Double[n];
@@ -180,7 +182,7 @@ public class InterpolationApp extends Application {
                 }
                 else
                     functionsGridPane.add(lineChart, 0, 0);
-                addModelChart();
+                addModelChart(function);
                 addInterpolatedChart();
             }
         });
