@@ -1,6 +1,8 @@
 package se.ifmo.ru;
 
 import javafx.application.Application;
+import javafx.beans.value.ChangeListener;
+import javafx.beans.value.ObservableValue;
 import javafx.event.EventHandler;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
@@ -10,10 +12,17 @@ import javafx.scene.chart.NumberAxis;
 import javafx.scene.chart.XYChart;
 import javafx.scene.control.*;
 import javafx.scene.input.MouseEvent;
+import javafx.scene.layout.Background;
+import javafx.scene.layout.BackgroundFill;
+import javafx.scene.layout.CornerRadii;
 import javafx.scene.layout.GridPane;
+import javafx.scene.paint.Color;
 import javafx.scene.shape.Rectangle;
 import javafx.scene.text.Font;
 import javafx.stage.Stage;
+
+import java.util.function.UnaryOperator;
+import java.util.regex.Pattern;
 
 
 public class InterpolationApp extends Application {
@@ -25,6 +34,7 @@ public class InterpolationApp extends Application {
     final private static LineChart<Number, Number> lineChart = new LineChart<Number, Number>(xAxis, yAxis);
     private static ToggleGroup functionsGroup = new ToggleGroup();
     private static ToggleGroup testSetsGroup = new ToggleGroup();
+    private static TextField textField = new TextField();
 
     private static Double[] xArray;
     private static Double[] yArray;
@@ -52,8 +62,11 @@ public class InterpolationApp extends Application {
         gridPane2.setAlignment(Pos.TOP_RIGHT);
         gridPane2.setPadding(new Insets(10, 10, 10, 0));
 
+        lineChart.setLegendVisible(false);
+
         addFunctionsChoice(gridPane1);
         addTestSetChoice(gridPane1);
+
         addButtons(gridPane1, gridPane2);
 
         pane.add(gridPane1, 0, 1);
@@ -108,6 +121,45 @@ public class InterpolationApp extends Application {
         gridPane.add(testSet3, 0, 8);
     }
 
+    private static void addXTextField(GridPane gridPane) {
+
+        Label label = new Label("Enter X:");
+        label.setFont(new Font(15));
+
+        Pattern pattern = Pattern.compile("\\d*|\\d+\\.\\d*");
+        TextFormatter formatter = new TextFormatter((UnaryOperator<TextFormatter.Change>) change -> {
+            return pattern.matcher(change.getControlNewText()).matches() ? change : null;
+        });
+
+        textField.setTextFormatter(formatter);
+
+        gridPane.add(label, 0, 10);
+        gridPane.add(textField, 0, 11);
+
+        Button checkButton = new Button("Find Y");
+        checkButton.setOnMouseClicked(new EventHandler<MouseEvent>() {
+            @Override
+            public void handle(MouseEvent event) {
+                double x;
+                x = Double.parseDouble(textField.textProperty().getValue());
+
+                if (x > 10)
+                    return;
+                XYChart.Series series = new XYChart.Series();
+                XYChart.Data data = new XYChart.Data(x, CubicSplineInterpolation.getInterpolatedFunctionY(x));
+                series.getData().add(data);
+
+                final Label label = new Label("Y = " + CubicSplineInterpolation.getInterpolatedFunctionY(x));
+                label.setBackground(new Background(new BackgroundFill(Color.WHITESMOKE, CornerRadii.EMPTY, Insets.EMPTY)));
+                label.setFont(new Font(15));
+                gridPane.add(label, 0, 12);
+
+                lineChart.getData().add(series);
+            }
+        });
+        gridPane.add(checkButton, 1, 12);
+    }
+
     private static void addModelChart(Function function) {
 
         XYChart.Series series = new XYChart.Series();
@@ -153,7 +205,7 @@ public class InterpolationApp extends Application {
 
                 TestSet testSet;
                 Toggle toggle = testSetsGroup.getSelectedToggle();
-                try{
+                try {
                     testSet = (TestSet) toggle.getUserData();
                 } catch (NullPointerException e) {
                     return;
@@ -161,7 +213,7 @@ public class InterpolationApp extends Application {
 
                 Function function;
                 Toggle toggle1 = functionsGroup.getSelectedToggle();
-                try{
+                try {
                     function = (Function) toggle1.getUserData();
                 } catch (NullPointerException e) {
                     return;
@@ -179,11 +231,11 @@ public class InterpolationApp extends Application {
                     LineChart<Number, Number> lineChart = (LineChart<Number, Number>) functionsGridPane.getChildren().get(0);
                     while (lineChart.getData().size() > 0)
                         lineChart.getData().remove(0);
-                }
-                else
+                } else
                     functionsGridPane.add(lineChart, 0, 0);
                 addModelChart(function);
                 addInterpolatedChart();
+                addXTextField(gridPane);
             }
         });
         gridPane.add(okButton, 1, 9);
