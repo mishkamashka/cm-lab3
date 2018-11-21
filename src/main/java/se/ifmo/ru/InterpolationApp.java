@@ -15,6 +15,9 @@ import javafx.scene.shape.Rectangle;
 import javafx.scene.text.Font;
 import javafx.stage.Stage;
 
+import java.util.ArrayList;
+import java.util.List;
+
 
 public class InterpolationApp extends Application {
 
@@ -24,6 +27,10 @@ public class InterpolationApp extends Application {
     final private static NumberAxis yAxis = new NumberAxis();
     final private static LineChart<Number, Number> lineChart = new LineChart<Number, Number>(xAxis, yAxis);
     private static ToggleGroup functionsGroup = new ToggleGroup();
+    private static ToggleGroup testSetsGroup = new ToggleGroup();
+
+    private static List<Double> xList;
+    private static List<Double> yList;
 
     public static void main(String[] args) {
         launch(args);
@@ -34,22 +41,24 @@ public class InterpolationApp extends Application {
 
         GridPane pane = new GridPane();
         pane.setHgap(0);
+        pane.setPrefSize(WIDTH, HEIGHT);
 
         GridPane gridPane1 = new GridPane();
-        gridPane1.setPrefSize(WIDTH * 0.25, HEIGHT);
+//        gridPane1.setPrefSize(WIDTH * 0.25, HEIGHT);
         gridPane1.setHgap(0);
         gridPane1.setVgap(5);
         gridPane1.setAlignment(Pos.TOP_LEFT);
         gridPane1.setPadding(new Insets(10, 0, 10, 10));
 
         GridPane gridPane2 = new GridPane();
-        gridPane2.setPrefSize(WIDTH * 0.75, HEIGHT);
-        gridPane2.setHgap(0);
+//        gridPane2.setPrefSize(WIDTH * 0.75, HEIGHT);
+        gridPane2.setHgap(10);
         gridPane2.setVgap(5);
         gridPane2.setAlignment(Pos.TOP_RIGHT);
         gridPane2.setPadding(new Insets(10, 10, 10, 0));
 
         addFunctionsChoice(gridPane1);
+        addTestSetChoice(gridPane1);
         addButtons(gridPane1, gridPane2);
 
         pane.add(gridPane1, 0, 1);
@@ -83,6 +92,27 @@ public class InterpolationApp extends Application {
         gridPane.add(function3, 0, 3);
     }
 
+    private static void addTestSetChoice(GridPane gridPane) {
+
+        Label label = new Label("Choose a test set of points:");
+        label.setFont(new Font(15));
+
+        RadioButton testSet1 = new RadioButton("First set [0, 2pi] step = pi / 2");
+        RadioButton testSet2 = new RadioButton("Second set [0, 2pi] step = pi / 4");
+        RadioButton testSet3 = new RadioButton("Third set [0, 2pi] step = pi / 4, one Y is wrong");
+        testSet1.setUserData(TestSet.FIRST);
+        testSet2.setUserData(TestSet.SECOND);
+        testSet3.setUserData(TestSet.THIRD);
+        testSet1.setToggleGroup(testSetsGroup);
+        testSet2.setToggleGroup(testSetsGroup);
+        testSet3.setToggleGroup(testSetsGroup);
+
+        gridPane.add(label, 0, 5);
+        gridPane.add(testSet1, 0, 6);
+        gridPane.add(testSet2, 0, 7);
+        gridPane.add(testSet3, 0, 8);
+    }
+
     private static void addModelChart() {
 
         XYChart.Series series = new XYChart.Series();
@@ -96,11 +126,24 @@ public class InterpolationApp extends Application {
             return;
         }
 
-        for (double i = -5; i <= 5; i += 0.1) {
+        for (double i = 0; i <= 2 * Math.PI; i += 0.1) {
             XYChart.Data data = new XYChart.Data(i, function.calculateFunction(i));
             Rectangle rectangle = new Rectangle(0, 0);
             rectangle.setVisible(false);
             data.setNode(rectangle);
+            series.getData().add(data);
+        }
+
+        lineChart.getData().add(series);
+    }
+
+    private static void addInterpolatedChart() {
+
+        XYChart.Series series = new XYChart.Series();
+        series.setName("Interpolated chart");
+
+        for (int i = 0; i <= xList.size() - 1; i++) {
+            XYChart.Data data = new XYChart.Data(xList.get(i), yList.get(i));
             series.getData().add(data);
         }
 
@@ -112,6 +155,17 @@ public class InterpolationApp extends Application {
 
         okButton.setOnMouseClicked(new EventHandler<MouseEvent>() {
             public void handle(MouseEvent event) {
+
+                TestSet testSet;
+                Toggle toggle = testSetsGroup.getSelectedToggle();
+                try{
+                    testSet = (TestSet) toggle.getUserData();
+                } catch (NullPointerException e) {
+                    return;
+                }
+                xList = testSet.setXTestSet();
+                yList = testSet.setYTestSet();
+
                 if (functionsGridPane.getChildren().size() != 0) {
                     LineChart<Number, Number> lineChart = (LineChart<Number, Number>) functionsGridPane.getChildren().get(0);
                     while (lineChart.getData().size() > 0)
@@ -120,9 +174,10 @@ public class InterpolationApp extends Application {
                 else
                     functionsGridPane.add(lineChart, 0, 0);
                 addModelChart();
+                addInterpolatedChart();
             }
         });
-        gridPane.add(okButton, 1, 4);
+        gridPane.add(okButton, 1, 9);
     }
 
 }
