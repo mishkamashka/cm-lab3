@@ -13,7 +13,6 @@ import javafx.scene.control.*;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.GridPane;
-import javafx.scene.shape.Line;
 import javafx.scene.shape.Rectangle;
 import javafx.scene.text.Font;
 import javafx.stage.Stage;
@@ -39,7 +38,7 @@ public class InterpolationApp extends Application {
 
         GridPane gridPane1 = new GridPane();
         gridPane1.setMinSize(WIDTH / 2.0, HEIGHT);
-        gridPane1.setHgap(5);
+        gridPane1.setHgap(0);
         gridPane1.setVgap(5);
         gridPane1.setAlignment(Pos.TOP_LEFT);
         gridPane1.setPadding(new Insets(10, 0, 10, 10));
@@ -47,17 +46,16 @@ public class InterpolationApp extends Application {
 
         GridPane gridPane2 = new GridPane();
         gridPane2.setMinSize(WIDTH / 2.0, HEIGHT);
-        gridPane2.setHgap(5);
+        gridPane2.setHgap(0);
         gridPane2.setVgap(5);
         gridPane2.setAlignment(Pos.TOP_LEFT);
         gridPane2.setPadding(new Insets(10, 10, 10, 0));
 
         addFunctionsChoice(gridPane1);
-//        addModelChart(gridPane2);
         addButtons(gridPane1, gridPane2);
 
         borderPane.setLeft(gridPane1);
-        borderPane.setRight(gridPane2);
+        borderPane.setCenter(gridPane2);
 
         Scene scene = new Scene(borderPane);
 
@@ -92,11 +90,13 @@ public class InterpolationApp extends Application {
         XYChart.Series series = new XYChart.Series();
         series.setName("Model chart");
 
+        Function function;
         Toggle toggle = functionsGroup.getSelectedToggle();
-        Function function = (Function) toggle.getUserData();
-
-        //TODO: выбранная функция применяется в цикле к i
-
+        try{
+            function = (Function) toggle.getUserData();
+        } catch (NullPointerException e) {
+            return;
+        }
 
         for (double i = -5; i <= 5; i += 0.1) {
             XYChart.Data data = new XYChart.Data(i, function.calculateFunction(i));
@@ -116,9 +116,8 @@ public class InterpolationApp extends Application {
             public void handle(MouseEvent event) {
                 if (functionsGridPane.getChildren().size() != 0) {
                     LineChart<Number, Number> lineChart = (LineChart<Number, Number>) functionsGridPane.getChildren().get(0);
-                    if (lineChart.getData().size() > 1)
-                        lineChart.getData().remove(1);
-                    lineChart.getData().remove(0);
+                    while (lineChart.getData().size() > 0)
+                        lineChart.getData().remove(0);
                 }
                 else
                     functionsGridPane.add(lineChart, 0, 0);
