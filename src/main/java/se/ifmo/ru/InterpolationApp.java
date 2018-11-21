@@ -15,9 +15,6 @@ import javafx.scene.shape.Rectangle;
 import javafx.scene.text.Font;
 import javafx.stage.Stage;
 
-import java.util.ArrayList;
-import java.util.List;
-
 
 public class InterpolationApp extends Application {
 
@@ -29,8 +26,8 @@ public class InterpolationApp extends Application {
     private static ToggleGroup functionsGroup = new ToggleGroup();
     private static ToggleGroup testSetsGroup = new ToggleGroup();
 
-    private static List<Double> xList;
-    private static List<Double> yList;
+    private static Double[] xArray;
+    private static Double[] yArray;
 
     public static void main(String[] args) {
         launch(args);
@@ -44,14 +41,12 @@ public class InterpolationApp extends Application {
         pane.setPrefSize(WIDTH, HEIGHT);
 
         GridPane gridPane1 = new GridPane();
-//        gridPane1.setPrefSize(WIDTH * 0.25, HEIGHT);
         gridPane1.setHgap(0);
         gridPane1.setVgap(5);
         gridPane1.setAlignment(Pos.TOP_LEFT);
         gridPane1.setPadding(new Insets(10, 0, 10, 10));
 
         GridPane gridPane2 = new GridPane();
-//        gridPane2.setPrefSize(WIDTH * 0.75, HEIGHT);
         gridPane2.setHgap(10);
         gridPane2.setVgap(5);
         gridPane2.setAlignment(Pos.TOP_RIGHT);
@@ -142,8 +137,16 @@ public class InterpolationApp extends Application {
         XYChart.Series series = new XYChart.Series();
         series.setName("Interpolated chart");
 
-        for (int i = 0; i <= xList.size() - 1; i++) {
-            XYChart.Data data = new XYChart.Data(xList.get(i), yList.get(i));
+        for (double i = 0; i <= 10; i += 0.1) {
+            double x = i;
+            double y = CubicSplineInterpolation.getInterpolatedFunctionY(i);
+
+            XYChart.Data data = new XYChart.Data(x, y);
+            if (!isInArray(x, xArray)) {
+                Rectangle rectangle = new Rectangle(0, 0);
+                rectangle.setVisible(false);
+                data.setNode(rectangle);
+            }
             series.getData().add(data);
         }
 
@@ -163,8 +166,12 @@ public class InterpolationApp extends Application {
                 } catch (NullPointerException e) {
                     return;
                 }
-                xList = testSet.setXTestSet();
-                yList = testSet.setYTestSet();
+                int n = testSet.setXTestSet().size();
+                xArray = new Double[n];
+                yArray = new Double[n];
+                xArray = testSet.setXTestSet().toArray(xArray);
+                yArray = testSet.setYTestSet().toArray(yArray);
+                CubicSplineInterpolation.createSplines(xArray, yArray, xArray.length);
 
                 if (functionsGridPane.getChildren().size() != 0) {
                     LineChart<Number, Number> lineChart = (LineChart<Number, Number>) functionsGridPane.getChildren().get(0);
@@ -178,6 +185,16 @@ public class InterpolationApp extends Application {
             }
         });
         gridPane.add(okButton, 1, 9);
+    }
+
+    private static boolean isInArray(double x, Double[] xArray) {
+        int i = 0;
+        while (i < xArray.length) {
+            if (Math.abs(xArray[i] - x) < 0.05)
+                return true;
+            i++;
+        }
+        return false;
     }
 
 }
