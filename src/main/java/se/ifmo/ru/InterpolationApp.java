@@ -1,7 +1,6 @@
 package se.ifmo.ru;
 
 import javafx.application.Application;
-import javafx.collections.ObservableList;
 import javafx.event.EventHandler;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
@@ -11,7 +10,6 @@ import javafx.scene.chart.NumberAxis;
 import javafx.scene.chart.XYChart;
 import javafx.scene.control.*;
 import javafx.scene.input.MouseEvent;
-import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.GridPane;
 import javafx.scene.shape.Rectangle;
 import javafx.scene.text.Font;
@@ -21,7 +19,7 @@ import javafx.stage.Stage;
 public class InterpolationApp extends Application {
 
     final private static int HEIGHT = 500;
-    final private static int WIDTH = 800;
+    final private static int WIDTH = 1000;
     final private static NumberAxis xAxis = new NumberAxis();
     final private static NumberAxis yAxis = new NumberAxis();
     final private static LineChart<Number, Number> lineChart = new LineChart<Number, Number>(xAxis, yAxis);
@@ -34,30 +32,30 @@ public class InterpolationApp extends Application {
     @Override
     public void start(Stage primaryStage) {
 
-        BorderPane borderPane = new BorderPane();
+        GridPane pane = new GridPane();
+        pane.setHgap(0);
 
         GridPane gridPane1 = new GridPane();
-        gridPane1.setMinSize(WIDTH / 2.0, HEIGHT);
+        gridPane1.setPrefSize(WIDTH * 0.25, HEIGHT);
         gridPane1.setHgap(0);
         gridPane1.setVgap(5);
         gridPane1.setAlignment(Pos.TOP_LEFT);
         gridPane1.setPadding(new Insets(10, 0, 10, 10));
-//        gridPane.setBackground(new Background(new BackgroundFill(Color.web("#EAD3A8"), CornerRadii.EMPTY, Insets.EMPTY)));
 
         GridPane gridPane2 = new GridPane();
-        gridPane2.setMinSize(WIDTH / 2.0, HEIGHT);
+        gridPane2.setPrefSize(WIDTH * 0.75, HEIGHT);
         gridPane2.setHgap(0);
         gridPane2.setVgap(5);
-        gridPane2.setAlignment(Pos.TOP_LEFT);
+        gridPane2.setAlignment(Pos.TOP_RIGHT);
         gridPane2.setPadding(new Insets(10, 10, 10, 0));
 
         addFunctionsChoice(gridPane1);
         addButtons(gridPane1, gridPane2);
 
-        borderPane.setLeft(gridPane1);
-        borderPane.setCenter(gridPane2);
+        pane.add(gridPane1, 0, 1);
+        pane.add(gridPane2, 1, 1);
 
-        Scene scene = new Scene(borderPane);
+        Scene scene = new Scene(pane);
 
         primaryStage.setTitle("Interpolation App");
         primaryStage.setScene(scene);
