@@ -35,6 +35,7 @@ public class InterpolationApp extends Application {
     private static ToggleGroup functionsGroup = new ToggleGroup();
     private static ToggleGroup testSetsGroup = new ToggleGroup();
     private static TextField textField = new TextField();
+    private static Label xLabel = new Label();
 
     private static Double[] xArray;
     private static Double[] yArray;
@@ -123,8 +124,8 @@ public class InterpolationApp extends Application {
 
     private static void addXTextField(GridPane gridPane) {
 
-        Label label = new Label("Enter X:");
-        label.setFont(new Font(15));
+        xLabel.setText("Enter X:");
+        xLabel.setFont(new Font(15));
 
         Pattern pattern = Pattern.compile("\\d*|\\d+\\.\\d*");
         TextFormatter formatter = new TextFormatter((UnaryOperator<TextFormatter.Change>) change -> {
@@ -133,7 +134,10 @@ public class InterpolationApp extends Application {
 
         textField.setTextFormatter(formatter);
 
-        gridPane.add(label, 0, 10);
+        gridPane.getChildren().remove(xLabel);
+        gridPane.add(xLabel, 0, 10);
+
+        gridPane.getChildren().remove(textField);
         gridPane.add(textField, 0, 11);
 
         Button checkButton = new Button("Find Y");
@@ -165,7 +169,7 @@ public class InterpolationApp extends Application {
         XYChart.Series series = new XYChart.Series();
         series.setName("Model chart");
 
-        for (double i = 0; i <= 2 * Math.PI; i += 0.1) {
+        for (double i = 0; i <= 10; i += 0.1) {
             XYChart.Data data = new XYChart.Data(i, function.calculateFunction(i));
             Rectangle rectangle = new Rectangle(0, 0);
             rectangle.setVisible(false);
